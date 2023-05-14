@@ -4,4 +4,5 @@
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
     <string name="main_button">Add work</string>
+    <string name="hh_mm_ss">HH:MM:SS</string>
 </resources>

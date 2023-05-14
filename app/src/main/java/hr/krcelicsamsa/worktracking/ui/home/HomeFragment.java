@@ -22,7 +22,8 @@ public class HomeFragment extends Fragment {
                 new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
-        return binding.getRoot();
+        View root = binding.getRoot();
+        return root;
     }
 
     @Override
