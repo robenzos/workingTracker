@@ -11,6 +11,6 @@
         android:id="@+id/editTextTime"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="HH:MM:SS"/>
+        android:hint="@string/hh_mm_ss"/>
 
 </LinearLayout>

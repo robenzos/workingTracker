@@ -60,8 +60,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String timeInput = editTextTime.getText().toString();
-                Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT).show();
-                // Process the selected time as needed
+
+                if (isValidTimeFormat(timeInput)) {
+                    Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT).show();
+                    // Process the selected time as needed
+                } else {
+                    Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT).show();
+                    dialog.cancel();
+                }
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -73,5 +79,10 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private boolean isValidTimeFormat(String time) {
+        String regex = "^([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$";
+        return time.matches(regex);
     }
 }
