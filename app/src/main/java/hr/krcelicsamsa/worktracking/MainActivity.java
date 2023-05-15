@@ -1,5 +1,6 @@
 package hr.krcelicsamsa.worktracking;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -9,6 +10,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.room.Room;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -18,9 +20,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.time.LocalDateTime;
+
 import hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
+
+    private AppDatabase appDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
 
         hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        appDatabase = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "note-db").build();
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
@@ -63,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isValidTimeFormat(timeInput)) {
                     Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT).show();
-                    // Process the selected time as needed
+                    saveWork(timeInput);
                 } else {
                     Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT).show();
                     dialog.cancel();
@@ -79,6 +88,31 @@ public class MainActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void saveWork(String inputtedTime) {
+        Work work = new Work();
+        work.date = LocalDateTime.now();
+        work.secondsWorked = calculateSeconds(inputtedTime);
+        work.payPerHour = 5.31;
+        new InsertWorkTask().execute(work);
+    }
+
+    private class InsertWorkTask extends AsyncTask<Work, Void, Void> {
+        @Override
+        protected Void doInBackground(Work... works) {
+            appDatabase.workDao().insert(works[0]);
+            return null;
+        }
+    }
+
+    public static int calculateSeconds(String time) {
+        String[] parts = time.split(":");
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+        int seconds = Integer.parseInt(parts[2]);
+
+        return hours * 3600 + minutes * 60 + seconds;
     }
 
     private boolean isValidTimeFormat(String time) {
