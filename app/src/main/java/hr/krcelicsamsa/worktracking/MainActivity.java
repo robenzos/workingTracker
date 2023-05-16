@@ -5,11 +5,14 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import android.app.AlertDialog;
@@ -18,9 +21,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding;
 
@@ -40,11 +46,25 @@ public class MainActivity extends AppCompatActivity {
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+
+        List<String> texts = new ArrayList<>();
+        TextAdapter adapter = new TextAdapter(texts);
+        recyclerView.setAdapter(adapter);
+
+        texts.add("Text 1");
+        texts.add("Text 2");
+        texts.add("Text 3");
+        adapter.notifyDataSetChanged();
+
         Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimeInputDialog();
+                //loadWorks();
             }
         });
 
@@ -54,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        loadWorks();
     }
 
     private void showTimeInputDialog() {
@@ -119,4 +141,29 @@ public class MainActivity extends AppCompatActivity {
         String regex = "^([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$";
         return time.matches(regex);
     }
+
+    private void loadWorks() {
+        new LoadWorksTask().execute();
+    }
+
+    private class LoadWorksTask extends AsyncTask<Void, Void,
+            List<Work>> {
+        @Override
+        protected List<Work> doInBackground(Void... voids) {
+            return appDatabase.workDao().getAll();
+        }
+
+        @Override
+        protected void onPostExecute(@NonNull List<Work> works) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Work work : works) {
+                //stringBuilder.append(note.text);
+                //stringBuilder.append("\n");
+                stringBuilder.insert(0, "\n\n");
+                stringBuilder.insert(0, work.secondsWorked);
+            }
+            //textView.setText(stringBuilder.toString());
+        }
+    }
+
 }
