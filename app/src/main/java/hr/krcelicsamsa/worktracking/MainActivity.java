@@ -4,6 +4,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +19,7 @@ import androidx.room.Room;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -44,8 +47,7 @@ public class MainActivity extends AppCompatActivity {
         hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        appDatabase = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "note-db").build();
+        appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "note-db").build();
 
         //BottomNavigationView navView = findViewById(R.id.nav_view);
 
@@ -58,10 +60,19 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         Button button = findViewById(R.id.button);
+        FloatingActionButton fab = findViewById(R.id.fab);
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimeInputDialog();
+            }
+        });
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showBottomSheetDialog();
             }
         });
 
@@ -73,6 +84,22 @@ public class MainActivity extends AppCompatActivity {
         //NavigationUI.setupWithNavController(binding.navView, navController);
 
         loadWorks();
+    }
+
+    private void showBottomSheetDialog() {
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout, null);
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivity.this);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        Button closeButton = bottomSheetView.findViewById(R.id.closeButton);
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+
+        bottomSheetDialog.show();
     }
 
     private void showTimeInputDialog() {
@@ -90,11 +117,15 @@ public class MainActivity extends AppCompatActivity {
                 String timeInput = editTextTime.getText().toString();
 
                 if (isValidTimeFormat(timeInput)) {
-                    Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                    toast.show();
                     saveWork(timeInput);
                     loadWorks();
                 } else {
-                    Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                    toast.show();
                     dialog.cancel();
                 }
             }
@@ -140,8 +171,7 @@ public class MainActivity extends AppCompatActivity {
         int minutes = (seconds % 3600) / 60;
         int remainingSeconds = seconds % 60;
 
-        String time = String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
-        return time;
+        return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
     }
 
     private boolean isValidTimeFormat(String time) {
@@ -153,8 +183,7 @@ public class MainActivity extends AppCompatActivity {
         new LoadWorksTask().execute();
     }
 
-    private class LoadWorksTask extends AsyncTask<Void, Void,
-            List<Work>> {
+    private class LoadWorksTask extends AsyncTask<Void, Void, List<Work>> {
         @Override
         protected List<Work> doInBackground(Void... voids) {
             return appDatabase.workDao().getAll();
@@ -163,10 +192,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(@NonNull List<Work> works) {
             texts.clear();
-            for (Work work : works) {
+            for (int i = works.size() - 1; i >= 0; i--) {
+                Work work = works.get(i);
                 StringBuilder stringBuilder = new StringBuilder();
-                //stringBuilder.append(note.text);
-                //stringBuilder.append("\n");
                 stringBuilder.insert(0, "\n\n");
                 stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));
                 texts.add(stringBuilder.toString());
