@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,8 @@ import hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private AppDatabase appDatabase;
+    List<String> texts;
+    TextAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,36 +47,30 @@ public class MainActivity extends AppCompatActivity {
         appDatabase = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "note-db").build();
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
+        //BottomNavigationView navView = findViewById(R.id.nav_view);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 
-        List<String> texts = new ArrayList<>();
-        TextAdapter adapter = new TextAdapter(texts);
+        texts = new ArrayList<>();
+        adapter = new TextAdapter(texts);
         recyclerView.setAdapter(adapter);
-
-        texts.add("Text 1");
-        texts.add("Text 2");
-        texts.add("Text 3");
-        adapter.notifyDataSetChanged();
 
         Button button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showTimeInputDialog();
-                //loadWorks();
             }
         });
 
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
+        //AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+        //        R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+        //        .build();
+        //NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        //NavigationUI.setupWithNavController(binding.navView, navController);
 
         loadWorks();
     }
@@ -95,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isValidTimeFormat(timeInput)) {
                     Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT).show();
                     saveWork(timeInput);
+                    loadWorks();
                 } else {
                     Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT).show();
                     dialog.cancel();
@@ -137,6 +135,15 @@ public class MainActivity extends AppCompatActivity {
         return hours * 3600 + minutes * 60 + seconds;
     }
 
+    public static String convertToTime(int seconds) {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+        int remainingSeconds = seconds % 60;
+
+        String time = String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
+        return time;
+    }
+
     private boolean isValidTimeFormat(String time) {
         String regex = "^([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$";
         return time.matches(regex);
@@ -155,14 +162,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(@NonNull List<Work> works) {
-            StringBuilder stringBuilder = new StringBuilder();
+            texts.clear();
             for (Work work : works) {
+                StringBuilder stringBuilder = new StringBuilder();
                 //stringBuilder.append(note.text);
                 //stringBuilder.append("\n");
                 stringBuilder.insert(0, "\n\n");
-                stringBuilder.insert(0, work.secondsWorked);
+                stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));
+                texts.add(stringBuilder.toString());
             }
-            //textView.setText(stringBuilder.toString());
+            adapter.notifyDataSetChanged();
         }
     }
 

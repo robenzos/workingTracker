@@ -5,4 +5,5 @@
     <string name="title_notifications">Notifications</string>
     <string name="main_button">Add work</string>
     <string name="hh_mm_ss">HH:MM:SS</string>
+    <string name="prijasnji_radovi">Prijašnji radovi</string>
 </resources>
