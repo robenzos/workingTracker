@@ -13,4 +13,7 @@ public interface UserSettingsDao {
 
     @Query("SELECT * FROM UserSettings")
     List<UserSettings> getAll();
+
+    @Query("DELETE FROM UserSettings")
+    void deleteAll();
 }
