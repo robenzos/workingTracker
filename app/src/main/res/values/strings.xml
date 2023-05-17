@@ -6,4 +6,7 @@
     <string name="main_button">Add work</string>
     <string name="hh_mm_ss">HH:MM:SS</string>
     <string name="prijasnji_radovi">Prijašnji radovi</string>
+    <string name="spremi">Spremi</string>
+    <string name="postavke">Postavke</string>
+    <string name="nova_satnica">Nova satnica</string>
 </resources>

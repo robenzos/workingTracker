@@ -1,5 +1,6 @@
 package hr.krcelicsamsa.worktracking;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -47,7 +48,11 @@ public class MainActivity extends AppCompatActivity {
         hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "note-db").build();
+        Context context = MainActivity.this;
+
+        appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "work_database")
+                //.fallbackToDestructiveMigration()
+                .build();
 
         //BottomNavigationView navView = findViewById(R.id.nav_view);
 
@@ -192,15 +197,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(@NonNull List<Work> works) {
             texts.clear();
-            for (int i = works.size() - 1; i >= 0; i--) {
-                Work work = works.get(i);
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.insert(0, "\n\n");
-                stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));
-                texts.add(stringBuilder.toString());
+            if (works.isEmpty()) {
+                // Handle empty database here
+                // For example, display a message or perform any necessary actions
+                texts.add("No works found in the database.");
+            } else {
+                for (int i = works.size() - 1; i >= 0; i--) {
+                    Work work = works.get(i);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.insert(0, "\n\n");
+                    stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));
+                    texts.add(stringBuilder.toString());
+                }
             }
             adapter.notifyDataSetChanged();
         }
     }
-
 }
