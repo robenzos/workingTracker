@@ -1,6 +1,5 @@
 package hr.krcelicsamsa.worktracking;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
@@ -24,14 +23,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 import hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding;
 
@@ -51,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
         hr.krcelicsamsa.worktracking.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        Context context = MainActivity.this;
 
         appDatabase = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "work_database")
                 //.fallbackToDestructiveMigration()
@@ -126,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetDialog.setContentView(bottomSheetView);
 
         Button closeButton = bottomSheetView.findViewById(R.id.closeButton);
+        Button deleteWorkHistoryButton = bottomSheetView.findViewById(R.id.deleteWorkHistoryButton);
         TextInputEditText textInputEditText = bottomSheetView.findViewById(R.id.newPayPerHour);
 
         closeButton.setOnClickListener(new View.OnClickListener() {
@@ -142,8 +139,49 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        deleteWorkHistoryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Confirmation");
+                builder.setMessage("Are you sure you want to perform this action?");
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Executors.newSingleThreadExecutor().execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                appDatabase.workDao().deleteAll();
+                                // Use the Main thread to update the UI
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(MainActivity.this, "Obrisani svi radovi.", Toast.LENGTH_SHORT).show();
+                                        loadWorks();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+
         bottomSheetDialog.show();
     }
+
 
     private void showBottomSheetDialogStatistics() {
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout_statistics, null);
@@ -297,7 +335,7 @@ public class MainActivity extends AppCompatActivity {
             if (works.isEmpty()) {
                 // Handle empty database here
                 // For example, display a message or perform any necessary actions
-                texts.add("No works found in the database.");
+                texts.add("Još nema spremljenih radova.");
             } else {
                 for (int i = works.size() - 1; i >= 0; i--) {
                     Work work = works.get(i);

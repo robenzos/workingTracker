@@ -12,4 +12,7 @@ public interface WorkDao {
 
     @Query("SELECT * FROM Work")
     List<Work> getAll();
+
+    @Query("DELETE FROM Work")
+    void deleteAll();
 }

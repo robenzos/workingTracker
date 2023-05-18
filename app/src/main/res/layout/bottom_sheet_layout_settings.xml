@@ -18,6 +18,18 @@
         android:layout_width="match_parent"
         android:layout_height="30dp" />
 
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/obrisi_povijest"
+        android:id="@+id/deleteWorkHistoryButton"
+        android:backgroundTint="#eb505d" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="30dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -41,7 +53,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="30dp" />
+        android:layout_height="10dp" />
 
     <Button
         android:layout_width="match_parent"
