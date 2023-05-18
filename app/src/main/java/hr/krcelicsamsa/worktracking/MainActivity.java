@@ -21,7 +21,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
@@ -38,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
     List<String> texts;
     TextAdapter adapter;
     double currentPayPerHr;
+    double totalEarned = 0.0;
+    int totalSecondsWorked = 0;
+    NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +71,8 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         Button button = findViewById(R.id.button);
-        FloatingActionButton fab = findViewById(R.id.fab);
-
-
+        FloatingActionButton fabSettings = findViewById(R.id.fab);
+        FloatingActionButton fabStatistics = findViewById(R.id.fabLeft);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,10 +81,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showBottomSheetDialog();
+                showBottomSheetDialogSettings();
+            }
+        });
+
+        fabStatistics.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showBottomSheetDialogStatistics();
             }
         });
 
@@ -108,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
         task.execute();
     }
 
-    private void showBottomSheetDialog() {
-        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout, null);
+    private void showBottomSheetDialogSettings() {
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout_settings, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivity.this);
         bottomSheetDialog.setContentView(bottomSheetView);
 
@@ -126,16 +138,46 @@ public class MainActivity extends AppCompatActivity {
                     bottomSheetDialog.dismiss();
                     loadCurrentPayPerHr();
                 } catch (NumberFormatException e) {
-                    Toast.makeText(MainActivity.this, "Invalid input. Please enter a valid number.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Invalid input. Pleae enter a valid number.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
         bottomSheetDialog.show();
     }
 
+    private void showBottomSheetDialogStatistics() {
+        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout_statistics, null);
+        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivity.this);
+        bottomSheetDialog.setContentView(bottomSheetView);
+
+        Button closeButton = bottomSheetView.findViewById(R.id.closeButton);
+        TextView textViewTimeWorked = bottomSheetView.findViewById(R.id.totalTimeWorked);
+        TextView textViewTotalEarned = bottomSheetView.findViewById(R.id.totalEarned);
+
+        textViewTimeWorked.setText(convertTimeFormatToVisual(convertToTime(totalSecondsWorked)));
+        textViewTotalEarned.setText(currencyFormatter.format(totalEarned));
+
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bottomSheetDialog.dismiss();
+            }
+        });
+        bottomSheetDialog.show();
+    }
+
+    public String convertTimeFormatToVisual(String timeString) {
+        String[] parts = timeString.split(":");
+
+        int hours = Integer.parseInt(parts[0]);
+        int minutes = Integer.parseInt(parts[1]);
+
+        return hours + "h " + minutes + "m";
+    }
+
     private double getCurrentPayPerHr() {
         List<UserSettings> userSettings = appDatabase.userSettingsDao().getAll();
-        if (userSettings.stream().count() == 1) {
+        if ((long) userSettings.size() == 1) {
             return userSettings.get(0).payPerHour;
         } else {
             saveUserSettings(5.31);
@@ -244,7 +286,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class LoadWorksTask extends AsyncTask<Void, Void, List<Work>> {
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
         @Override
         protected List<Work> doInBackground(Void... voids) {
             return appDatabase.workDao().getAll();
@@ -260,8 +301,10 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 for (int i = works.size() - 1; i >= 0; i--) {
                     Work work = works.get(i);
+                    totalSecondsWorked += work.secondsWorked;
+                    totalEarned += calculateTotalPay(work.secondsWorked, work.payPerHour);
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.insert(0, "\n\n");
+                    stringBuilder.insert(0, "\n");
                     stringBuilder.insert(0, work.payPerHour + "€/hr" + "   ---   " +  currencyFormatter.format(calculateTotalPay(work.secondsWorked, work.payPerHour)));
                     stringBuilder.insert(0, "\n");
                     stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));

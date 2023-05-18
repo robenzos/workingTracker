@@ -9,4 +9,10 @@
     <string name="spremi">Spremi</string>
     <string name="postavke">Postavke</string>
     <string name="nova_satnica">Nova satnica</string>
+    <string name="statistike">Statistike</string>
+    <string name="zatvori">Zatvori</string>
+    <string name="sati_rada">Vrijeme rada</string>
+    <string name="zaradeno">Zarađeno</string>
+    <string name="_0h_0m">0h 0m</string>
+    <string name="_0eur">0 €</string>
 </resources>
