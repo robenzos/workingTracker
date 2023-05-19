@@ -27,6 +27,7 @@ import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Executors;
@@ -70,26 +71,11 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fabSettings = findViewById(R.id.fab);
         FloatingActionButton fabStatistics = findViewById(R.id.fabLeft);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTimeInputDialog();
-            }
-        });
+        button.setOnClickListener(v -> showTimeInputDialog());
 
-        fabSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showBottomSheetDialogSettings();
-            }
-        });
+        fabSettings.setOnClickListener(v -> showBottomSheetDialogSettings());
 
-        fabStatistics.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showBottomSheetDialogStatistics();
-            }
-        });
+        fabStatistics.setOnClickListener(v -> showBottomSheetDialogStatistics());
 
         //AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
         //        R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
@@ -125,62 +111,47 @@ public class MainActivity extends AppCompatActivity {
         Button deleteWorkHistoryButton = bottomSheetView.findViewById(R.id.deleteWorkHistoryButton);
         TextInputEditText textInputEditText = bottomSheetView.findViewById(R.id.newPayPerHour);
 
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String input = String.valueOf(textInputEditText.getText());
-                try {
-                    double value = Double.parseDouble(input);
-                    saveUserSettings(value);
-                    bottomSheetDialog.dismiss();
-                    loadCurrentPayPerHr();
-                } catch (NumberFormatException e) {
-                    Toast.makeText(MainActivity.this, "Invalid input. Pleae enter a valid number.", Toast.LENGTH_SHORT).show();
-                }
+        closeButton.setOnClickListener(v -> {
+            String input = String.valueOf(textInputEditText.getText());
+            try {
+                double value = Double.parseDouble(input);
+                saveUserSettings(value);
+                bottomSheetDialog.dismiss();
+                loadCurrentPayPerHr();
+            } catch (NumberFormatException e) {
+                Toast.makeText(MainActivity.this, "Invalid input. Pleae enter a valid number.", Toast.LENGTH_SHORT).show();
             }
         });
 
-        deleteWorkHistoryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Confirmation");
-                builder.setMessage("Are you sure you want to perform this action?");
+        deleteWorkHistoryButton.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Confirmation");
+            builder.setMessage("Are you sure you want to perform this action?");
 
-                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Executors.newSingleThreadExecutor().execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                appDatabase.workDao().deleteAll();
-                                // Use the Main thread to update the UI
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(MainActivity.this, "Obrisani svi radovi.", Toast.LENGTH_SHORT).show();
-                                        loadWorks();
-                                    }
-                                });
-                            }
-                        });
-                    }
+            builder.setPositiveButton("Yes", (dialog, which) -> Executors.newSingleThreadExecutor().execute(() -> {
+                appDatabase.workDao().deleteAll();
+                // Use the Main thread to update the UI
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "Obrisani svi radovi.", Toast.LENGTH_SHORT).show();
+                    loadWorks();
+                    bottomSheetDialog.dismiss();
                 });
+            }));
 
-                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
 
-                AlertDialog dialog = builder.create();
-                dialog.show();
-            }
+            AlertDialog dialog = builder.create();
+            dialog.show();
         });
 
         bottomSheetDialog.show();
     }
+
 
 
     private void showBottomSheetDialogStatistics() {
@@ -195,12 +166,7 @@ public class MainActivity extends AppCompatActivity {
         textViewTimeWorked.setText(convertTimeFormatToVisual(convertToTime(totalSecondsWorked)));
         textViewTotalEarned.setText(currencyFormatter.format(totalEarned));
 
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bottomSheetDialog.dismiss();
-            }
-        });
+        closeButton.setOnClickListener(v -> bottomSheetDialog.dismiss());
         bottomSheetDialog.show();
     }
 
@@ -232,22 +198,19 @@ public class MainActivity extends AppCompatActivity {
         final EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
 
         builder.setTitle("Enter time:");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String timeInput = editTextTime.getText().toString();
-                if (isValidTimeFormat(timeInput)) {
-                    Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
-                    toast.show();
-                    saveWork(timeInput);
-                    loadWorks();
-                } else {
-                    Toast toast = Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT);
-                    toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
-                    toast.show();
-                    dialog.cancel();
-                }
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String timeInput = editTextTime.getText().toString();
+            if (isValidTimeFormat(timeInput)) {
+                Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                toast.show();
+                saveWork(timeInput);
+                loadWorks();
+            } else {
+                Toast toast = Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                toast.show();
+                dialog.cancel();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -332,13 +295,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(@NonNull List<Work> works) {
             texts.clear();
+            totalEarned = 0.0;
+            totalSecondsWorked = 0;
             if (works.isEmpty()) {
-                // Handle empty database here
-                // For example, display a message or perform any necessary actions
                 texts.add("Još nema spremljenih radova.");
             } else {
-                for (int i = works.size() - 1; i >= 0; i--) {
-                    Work work = works.get(i);
+                Collections.reverse(works);
+                for (Work work : works) {
                     totalSecondsWorked += work.secondsWorked;
                     totalEarned += calculateTotalPay(work.secondsWorked, work.payPerHour);
                     StringBuilder stringBuilder = new StringBuilder();
