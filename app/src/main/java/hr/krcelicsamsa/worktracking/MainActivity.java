@@ -18,6 +18,7 @@ import android.content.DialogInterface;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     double currentPayPerHr;
     double totalEarned = 0.0;
     int totalSecondsWorked = 0;
+    List<Work> allWorks;
     NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     @Override
@@ -170,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetDialog.show();
     }
 
-    public String convertTimeFormatToVisual(String timeString) {
+    public static String convertTimeFormatToVisual(String timeString) {
         String[] parts = timeString.split(":");
 
         int hours = Integer.parseInt(parts[0]);
@@ -179,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         return hours + "h " + minutes + "m";
     }
 
-    private double getCurrentPayPerHr() {
+    public double getCurrentPayPerHr() {
         List<UserSettings> userSettings = appDatabase.userSettingsDao().getAll();
         if ((long) userSettings.size() == 1) {
             return userSettings.get(0).payPerHour;
@@ -240,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void saveUserSettings(double newPayPerHour) {
+    public void saveUserSettings(double newPayPerHour) {
         UserSettings userSettings = new UserSettings();
         userSettings.payPerHour = newPayPerHour;
         new InsertUserSettingsTask().execute(userSettings);
@@ -272,16 +274,16 @@ public class MainActivity extends AppCompatActivity {
         return String.format("%02d:%02d:%02d", hours, minutes, remainingSeconds);
     }
 
-    private boolean isValidTimeFormat(String time) {
+    public static boolean isValidTimeFormat(String time) {
         String regex = "^([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)$";
         return time.matches(regex);
     }
 
-    private void loadWorks() {
+    public void loadWorks() {
         new LoadWorksTask().execute();
     }
 
-    public double calculateTotalPay(int secondsWorked, double payPerHour) {
+    public static double calculateTotalPay(int secondsWorked, double payPerHour) {
         double hoursWorked = secondsWorked / 3600.0;
         return hoursWorked * payPerHour;
     }
@@ -294,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(@NonNull List<Work> works) {
+            allWorks = works;
             texts.clear();
             totalEarned = 0.0;
             totalSecondsWorked = 0;
