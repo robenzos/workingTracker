@@ -45,7 +45,7 @@ public class UnitTests {
         activity.finish();
     }
 
-    //unit tests (only one module)
+    //unit testovi
     @Test
     public void secondsToTimeIsCorrect() {
         assertEquals("01:34:30", convertToTime(5670));
@@ -66,17 +66,36 @@ public class UnitTests {
         assertEquals("1h 34m", convertTimeFormatToVisual("01:34:30"));
     }
 
-    //medium tests (retrieving and testing data from the database)
+   //medium testovi
+
     @Test
     public void isTimeInputPopupEntryCorrect() {
-        assertTrue(activity.showTimeInputDialogMock("01:34:30"));
+        assertTrue(activity.showTimeInputDialogMockEntry("01:34:30"));
     }
 
     @Test
     public void isTimeInputPopupEntryFalse() {
-        assertFalse(activity.showTimeInputDialogMock("01:134:30"));
+        assertFalse(activity.showTimeInputDialogMockEntry("01:133:30"));
     }
 
-    //end-to-end
+    @Test
+    public void isShowBottomSheetDialogSettingsEntryCorrect() {
+        assertTrue(activity.showBottomSheetDialogSettingsInput("5.31"));
+    }
 
+    @Test
+    public void isShowBottomSheetDialogSettingsEntryFalse() {
+        assertFalse(activity.showBottomSheetDialogSettingsInput("5:31"));
+    }
+
+    //end-to-end testovi
+    @Test
+    public void isTimeInputPopupOpeningCorrect() {
+        assertTrue(activity.showTimeInputDialogMockOpening());
+    }
+
+    @Test
+    public void isShowBottomSheetDialogSettingsOpeningCorrect() {
+        assertTrue(activity.showBottomSheetDialogSettingsOpening());
+    }
 }

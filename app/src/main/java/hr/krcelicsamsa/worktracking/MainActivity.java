@@ -154,8 +154,6 @@ public class MainActivity extends AppCompatActivity {
         bottomSheetDialog.show();
     }
 
-
-
     private void showBottomSheetDialogStatistics() {
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout_statistics, null);
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivity.this);
