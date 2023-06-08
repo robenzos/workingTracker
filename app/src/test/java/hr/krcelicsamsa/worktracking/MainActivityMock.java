@@ -26,11 +26,8 @@ public class MainActivityMock extends AppCompatActivity {
         View dialogView = inflater.inflate(R.layout.time_input_dialog, null);
         builder.setView(dialogView);
 
-        EditText editText = new EditText(MainActivityMock.this);
+        EditText editText = dialogView.findViewById(R.id.editTextTime);
         editText.setText(inputtedText);
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
 
         if (isValidTimeFormat(editText.getText().toString())) {
             return true;
@@ -60,10 +57,8 @@ public class MainActivityMock extends AppCompatActivity {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivityMock.this);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        EditText textInputEditText = new EditText(MainActivityMock.this);
+        TextInputEditText textInputEditText = bottomSheetView.findViewById(R.id.newPayPerHour);
         textInputEditText.setText(inputtedText);
-
-        bottomSheetDialog.show();
 
         try {
             Double.parseDouble(String.valueOf(textInputEditText.getText()));
@@ -88,55 +83,3 @@ public class MainActivityMock extends AppCompatActivity {
         return bottomSheetDialog.isShowing();
     }
 }
-
-/*
-   private void showBottomSheetDialogSettings() {
-        View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_layout_settings, null);
-        BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(MainActivity.this);
-        bottomSheetDialog.setContentView(bottomSheetView);
-
-        Button closeButton = bottomSheetView.findViewById(R.id.closeButton);
-        Button deleteWorkHistoryButton = bottomSheetView.findViewById(R.id.deleteWorkHistoryButton);
-        TextInputEditText textInputEditText = bottomSheetView.findViewById(R.id.newPayPerHour);
-
-        closeButton.setOnClickListener(v -> {
-            String input = String.valueOf(textInputEditText.getText());
-            try {
-                double value = Double.parseDouble(input);
-                saveUserSettings(value);
-                bottomSheetDialog.dismiss();
-                loadCurrentPayPerHr();
-            } catch (NumberFormatException e) {
-                Toast.makeText(MainActivity.this, "Invalid input. Pleae enter a valid number.", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        deleteWorkHistoryButton.setOnClickListener(v -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle("Confirmation");
-            builder.setMessage("Are you sure you want to perform this action?");
-
-            builder.setPositiveButton("Yes", (dialog, which) -> Executors.newSingleThreadExecutor().execute(() -> {
-                appDatabase.workDao().deleteAll();
-                // Use the Main thread to update the UI
-                runOnUiThread(() -> {
-                    Toast.makeText(MainActivity.this, "Obrisani svi radovi.", Toast.LENGTH_SHORT).show();
-                    loadWorks();
-                    bottomSheetDialog.dismiss();
-                });
-            }));
-
-            builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-
-            AlertDialog dialog = builder.create();
-            dialog.show();
-        });
-
-        bottomSheetDialog.show();
-    }
- */
