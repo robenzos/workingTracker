@@ -13,4 +13,12 @@
         android:layout_height="wrap_content"
         android:hint="@string/hh_mm_ss"/>
 
+    <DatePicker
+        android:id="@+id/datePicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:calendarTextColor="#800080"
+        android:datePickerMode="spinner"
+        android:calendarViewShown="false"/>
+
 </LinearLayout>

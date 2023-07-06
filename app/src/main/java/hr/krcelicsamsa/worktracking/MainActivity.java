@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -196,15 +197,22 @@ public class MainActivity extends AppCompatActivity {
         builder.setView(dialogView);
 
         final EditText editTextTime = dialogView.findViewById(R.id.editTextTime);
+        final DatePicker datePicker = dialogView.findViewById(R.id.datePicker);
 
         builder.setTitle("Enter time:");
         builder.setPositiveButton("OK", (dialog, which) -> {
             String timeInput = editTextTime.getText().toString();
             if (isValidTimeFormat(timeInput)) {
-                Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput, Toast.LENGTH_SHORT);
+                int day = datePicker.getDayOfMonth();
+                int month = datePicker.getMonth();
+                int year = datePicker.getYear();
+
+                LocalDateTime dateTime = LocalDateTime.of(year, month + 1, day, 0, 0);
+                Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput + ", Selected Date: " + dateTime.toString(), Toast.LENGTH_SHORT);
                 toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
                 toast.show();
-                saveWork(timeInput);
+
+                saveWork(dateTime, timeInput);
                 loadWorks();
             } else {
                 Toast toast = Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT);
@@ -213,20 +221,15 @@ public class MainActivity extends AppCompatActivity {
                 dialog.cancel();
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
         AlertDialog dialog = builder.create();
         dialog.show();
     }
 
-    private void saveWork(String inputtedTime) {
+    private void saveWork(LocalDateTime dateTime, String inputtedTime) {
         Work work = new Work();
-        work.date = LocalDateTime.now();
+        work.date = dateTime;
         work.secondsWorked = calculateSeconds(inputtedTime);
         work.payPerHour = currentPayPerHr;
         new InsertWorkTask().execute(work);
@@ -309,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
                     stringBuilder.insert(0, "\n");
                     stringBuilder.insert(0, work.payPerHour + "€/hr" + "   ---   " +  currencyFormatter.format(calculateTotalPay(work.secondsWorked, work.payPerHour)));
                     stringBuilder.insert(0, "\n");
-                    stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + "   ---   " + convertToTime(work.secondsWorked));
+                    stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + "   ---   " + convertToTime(work.secondsWorked));
                     texts.add(stringBuilder.toString());
                 }
             }
