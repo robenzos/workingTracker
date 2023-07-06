@@ -304,15 +304,30 @@ public class MainActivity extends AppCompatActivity {
             if (works.isEmpty()) {
                 texts.add("Još nema spremljenih radova.");
             } else {
-                Collections.reverse(works);
+                Collections.sort(works, (work1, work2) -> work2.date.compareTo(work1.date));
+
+                String currentMonthYear = "";
+
                 for (Work work : works) {
                     totalSecondsWorked += work.secondsWorked;
                     totalEarned += calculateTotalPay(work.secondsWorked, work.payPerHour);
+
+                    String monthYear = work.date.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
+
+                    if (!monthYear.equals(currentMonthYear)) {
+                        currentMonthYear = monthYear;
+                        texts.add("-------    " + monthYear + "    -------");
+                    }
+
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.insert(0, "\n");
-                    stringBuilder.insert(0, work.payPerHour + "€/hr" + "   ---   " +  currencyFormatter.format(calculateTotalPay(work.secondsWorked, work.payPerHour)));
-                    stringBuilder.insert(0, "\n");
-                    stringBuilder.insert(0, work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) + "   ---   " + convertToTime(work.secondsWorked));
+                    stringBuilder.append(work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+                            .append("   ---   ")
+                            .append(convertToTime(work.secondsWorked))
+                            .append("\n")
+                            .append(work.payPerHour)
+                            .append("€/hr")
+                            .append("   ---   ")
+                            .append(currencyFormatter.format(calculateTotalPay(work.secondsWorked, work.payPerHour)));
                     texts.add(stringBuilder.toString());
                 }
             }
