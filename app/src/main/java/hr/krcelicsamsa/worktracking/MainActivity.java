@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
 
             builder.setPositiveButton("Yes", (dialog, which) -> Executors.newSingleThreadExecutor().execute(() -> {
                 appDatabase.workDao().deleteAll();
-                // Use the Main thread to update the UI
                 runOnUiThread(() -> {
                     Toast.makeText(MainActivity.this, "Obrisani svi radovi.", Toast.LENGTH_SHORT).show();
                     loadWorks();
@@ -209,14 +208,14 @@ public class MainActivity extends AppCompatActivity {
 
                 LocalDateTime dateTime = LocalDateTime.of(year, month + 1, day, 0, 0);
                 Toast toast = Toast.makeText(MainActivity.this, "Selected Time: " + timeInput + ", Selected Date: " + dateTime.toString(), Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16);
                 toast.show();
 
                 saveWork(dateTime, timeInput);
                 loadWorks();
             } else {
                 Toast toast = Toast.makeText(MainActivity.this, "Invalid time format", Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16); // Adjust the vertical offset as needed
+                toast.setGravity(Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 16);
                 toast.show();
                 dialog.cancel();
             }
@@ -307,6 +306,8 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(works, (work1, work2) -> work2.date.compareTo(work1.date));
 
                 String currentMonthYear = "";
+                double monthlyEarned = 0.0;
+                int monthlySecondsWorked = 0;
 
                 for (Work work : works) {
                     totalSecondsWorked += work.secondsWorked;
@@ -315,9 +316,19 @@ public class MainActivity extends AppCompatActivity {
                     String monthYear = work.date.format(DateTimeFormatter.ofPattern("MMMM yyyy"));
 
                     if (!monthYear.equals(currentMonthYear)) {
+                        if (!currentMonthYear.isEmpty()) {
+                            texts.add("Mjesečna zarada: " + currencyFormatter.format(monthlyEarned) + "\n" + "Vrijeme rada: " + convertToTime(monthlySecondsWorked));
+                        }
+
                         currentMonthYear = monthYear;
                         texts.add("-------    " + monthYear + "    -------");
+
+                        monthlyEarned = 0.0;
+                        monthlySecondsWorked = 0;
                     }
+
+                    monthlyEarned += calculateTotalPay(work.secondsWorked, work.payPerHour);
+                    monthlySecondsWorked += work.secondsWorked;
 
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.append(work.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
@@ -330,8 +341,13 @@ public class MainActivity extends AppCompatActivity {
                             .append(currencyFormatter.format(calculateTotalPay(work.secondsWorked, work.payPerHour)));
                     texts.add(stringBuilder.toString());
                 }
+
+                if (!currentMonthYear.isEmpty()) {
+                    texts.add("Mjesečna zarada: " + currencyFormatter.format(monthlyEarned) + "\n" + "Vrijeme rada: " + convertToTime(monthlySecondsWorked));
+                }
             }
             adapter.notifyDataSetChanged();
         }
+
     }
 }
