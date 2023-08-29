@@ -301,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
             totalEarned = 0.0;
             totalSecondsWorked = 0;
             if (works.isEmpty()) {
-                texts.add("Još nema spremljenih radova.");
+                texts.add("No saved work sessions.");
             } else {
                 Collections.sort(works, (work1, work2) -> work2.date.compareTo(work1.date));
 
@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (!monthYear.equals(currentMonthYear)) {
                         if (!currentMonthYear.isEmpty()) {
-                            texts.add("Mjesečna zarada: " + currencyFormatter.format(monthlyEarned) + "\n" + "Vrijeme rada: " + convertToTime(monthlySecondsWorked));
+                            texts.add("Monthly earnings: " + currencyFormatter.format(monthlyEarned) + "\n" + "Work time: " + convertToTime(monthlySecondsWorked));
                         }
 
                         currentMonthYear = monthYear;
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (!currentMonthYear.isEmpty()) {
-                    texts.add("Mjesečna zarada: " + currencyFormatter.format(monthlyEarned) + "\n" + "Vrijeme rada: " + convertToTime(monthlySecondsWorked));
+                    texts.add("Monthly earnings: " + currencyFormatter.format(monthlyEarned) + "\n" + "Work time: " + convertToTime(monthlySecondsWorked));
                 }
             }
             adapter.notifyDataSetChanged();
